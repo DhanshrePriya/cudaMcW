@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/include",
+                "/usr/include/c++/9",
+                "/usr/include/x86_64-linux-gnu/c++/9",
+                "/usr/local/include",
+                "/usr/local/cuda-12.6/include",
+                "/usr/lib/gcc/x86_64-linux-gnu/9/include"
+            ],
+            "forcedInclude": ["/usr/include/c++/9/cstddef"],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++-9",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": ["-std=c++17", "-xc++"]
+        }
+    ],
+    "version": 4
+}

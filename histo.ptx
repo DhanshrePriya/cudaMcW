@@ -1,0 +1,49 @@
+.version 6.4
+.target sm_30
+.address_size 64
+
+.visible .entry _Z5histoPfPii(
+    .param .u64 _Z5histoPfPii_param_0,
+    .param .u64 _Z5histoPfPii_param_1,
+    .param .u32 _Z5histoPfPii_param_2
+)
+{
+    .reg .pred 	%p<2>; // predictive reg to ensure tid < N
+    .reg .f32   %f<2>; // floating pt reg
+    .reg .b32   %r<5>; // int reg -- used for ind calcu
+    .reg .b64   %rd<6>; // addr reg
+
+    // kernel parameters are loaded
+    ld.param.u64 	%rd1, [_Z5histoPfPii_param_0]; // input arr
+    ld.param.u64 	%rd2, [_Z5histoPfPii_param_1]; // histogram arr
+    ld.param.u32 	%r2, [_Z5histoPfPii_param_2]; // r2 has N 
+
+    // cal of thrd inx using int registers 
+    mov.u32 	%r3, %ctaid.x; // r3 loads blk id Cooperative Thread Array INDX
+    mov.u32 	%r4, %ntid.x;  // r4 loads num of thrds per blk (blk dim)
+    mov.u32 	%r5, %tid.x; // r5 has tid
+    mad.lo.s32 	%r1, %r4, %r3, %r5; // gid cal
+
+    // boundary check 
+    setp.ge.s32	%p1, %r1, %r2;  // check if r1 has a value greater than N --> if so return else continue
+    @%p1 bra 	lab;
+
+    // compute the byte offset val for tid 
+    mul.wide.s32 	%rd3, %r1, 4;  // tid * 4 (bacause int is 4 bytes)
+    add.s64 	%rd4, %rd1, %rd3;  // starting indx + offset
+    ld.global.f32 	%f1, [%rd4];  // load input from corresponding indx 
+
+    // conv input f to bin indx 
+    cvt.rzi.s32.f32 	%r1, %f1;  
+
+    // find correct bin by offset using tid 
+    mul.wide.s32 	%rd5, %r1, 4;  
+    add.s64 	%rd6, %rd2, %rd5;  
+
+    // add 1 to histo indx 
+    atom.add.global.s32 [%rd6], 1;
+
+lab:
+    ret;
+
+}
